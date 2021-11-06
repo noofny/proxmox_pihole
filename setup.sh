@@ -121,5 +121,6 @@ pct exec "${CONTAINER_ID}" -- bash -c "/usr/local/bin/pihole -a -p"
 
 
 # Done - reboot!
+rm -rf ${TEMP_FOLDER_PATH}
 info "Container and app setup - container will restart!"
 pct reboot "${CONTAINER_ID}"
