@@ -4,11 +4,6 @@
 echo "Setup OS : begin"
 
 
-# timezone
-echo "Setting timezone..."
-timedatectl set-timezone Australia/Sydney
-
-
 # locale
 echo "Setting locale..."
 LOCALE_VALUE="en_AU.UTF-8"
@@ -20,6 +15,11 @@ echo ">>> update-locale..."
 update-locale ${LOCALE_VALUE}
 echo ">>> hack /etc/ssh/ssh_config..."
 sed -e '/SendEnv/ s/^#*/#/' -i /etc/ssh/ssh_config
+
+
+# timezone
+echo "Setting timezone..."
+timedatectl set-timezone Australia/Sydney
 
 
 # patch

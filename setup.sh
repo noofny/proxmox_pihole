@@ -99,6 +99,7 @@ pct create "${CONTAINER_ID}" "${TEMPLATE_STRING}" \
 # Start container
 info "Starting LXC container..."
 pct start "${CONTAINER_ID}"
+sleep 5
 
 
 # Setup OS
