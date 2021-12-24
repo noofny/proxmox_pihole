@@ -28,6 +28,7 @@ DEFAULT_IPV4_CIDR='192.168.0.48/24'
 DEFAULT_IPV4_GW='192.168.0.1'
 DEFAULT_UPSTREAM_DNS_1='1.1.1.1'
 DEFAULT_UPSTREAM_DNS_2='1.0.0.1'
+DEFAULT_CONTAINER_ID=$(pvesh get /cluster/nextid)
 read -p "Enter a hostname (${DEFAULT_HOSTNAME}) : " HOSTNAME
 read -s -p "Enter a password (${DEFAULT_PASSWORD}) : " HOSTPASS
 echo -e "\n"
@@ -35,6 +36,8 @@ read -p "Enter an IPv4 CIDR (${DEFAULT_IPV4_CIDR}) : " HOST_IP4_CIDR
 read -p "Enter an IPv4 Gateway (${DEFAULT_IPV4_GW}) : " HOST_IP4_GATEWAY
 read -p "Enter an IPv4 address for upstream DNS 1 (${DEFAULT_UPSTREAM_DNS_1}) : " UPSTREAM_DNS_1
 read -p "Enter an IPv4 address for upstream DNS 2 (${DEFAULT_UPSTREAM_DNS_2}) : " UPSTREAM_DNS_2
+read -p "Enter a container ID (${DEFAULT_CONTAINER_ID}) : " CONTAINER_ID
+info "Using ContainerID: ${CONTAINER_ID}"
 HOSTNAME="${HOSTNAME:-${DEFAULT_HOSTNAME}}"
 HOSTPASS="${HOSTPASS:-${DEFAULT_PASSWORD}}"
 HOST_IP4_CIDR="${HOST_IP4_CIDR:-${DEFAULT_IPV4_CIDR}}"
@@ -45,13 +48,13 @@ export HOST_IP4_CIDR=${HOST_IP4_CIDR}
 export UPSTREAM_DNS_1=${UPSTREAM_DNS_1}
 export UPSTREAM_DNS_2=${UPSTREAM_DNS_2}
 CONTAINER_OS_TYPE='ubuntu'
-CONTAINER_OS_VERSION='20.04'
+CONTAINER_OS_VERSION='21.04'
 CONTAINER_OS_STRING="${CONTAINER_OS_TYPE}-${CONTAINER_OS_VERSION}"
 info "Using OS: ${CONTAINER_OS_STRING}"
 CONTAINER_ARCH=$(dpkg --print-architecture)
 mapfile -t TEMPLATES < <(pveam available -section system | sed -n "s/.*\($CONTAINER_OS_STRING.*\)/\1/p" | sort -t - -k 2 -V)
 TEMPLATE="${TEMPLATES[-1]}"
-TEMPLATE_STRING="local:vztmpl/${TEMPLATE}"
+TEMPLATE_STRING="remote:vztmpl/${TEMPLATE}"
 info "Using template: ${TEMPLATE_STRING}"
 
 
@@ -76,11 +79,6 @@ fi
 info "Using '$STORAGE' for storage location."
 
 
-# Get the next guest VM/LXC ID
-CONTAINER_ID=$(pvesh get /cluster/nextid)
-info "Container ID is $CONTAINER_ID."
-
-
 # Create the container
 info "Creating Privileged LXC container..."
 pct create "${CONTAINER_ID}" "${TEMPLATE_STRING}" \
@@ -100,6 +98,11 @@ pct create "${CONTAINER_ID}" "${TEMPLATE_STRING}" \
 info "Starting LXC container..."
 pct start "${CONTAINER_ID}"
 sleep 5
+CONTAINER_STATUS=$(pct status $CONTAINER_ID)
+if [ ${CONTAINER_STATUS} != "status: running" ]; then
+    error "Container ${CONTAINER_ID} is not running! status=${CONTAINER_STATUS}"
+    exit 1
+fi
 
 
 # Setup OS
