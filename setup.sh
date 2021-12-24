@@ -80,7 +80,7 @@ info "Using '$STORAGE' for storage location."
 
 
 # Create the container
-info "Creating Privileged LXC container..."
+info "Creating LXC container..."
 pct create "${CONTAINER_ID}" "${TEMPLATE_STRING}" \
     -arch "${CONTAINER_ARCH}" \
     -cores 1 \
@@ -90,8 +90,7 @@ pct create "${CONTAINER_ID}" "${TEMPLATE_STRING}" \
     -net0 name=eth0,bridge=vmbr0,gw=${HOST_IP4_GATEWAY},ip=${HOST_IP4_CIDR} \
     -ostype "${CONTAINER_OS_TYPE}" \
     -password ${HOSTPASS} \
-    -storage "${STORAGE}" \
-    >/dev/null
+    -storage "${STORAGE}"
 
 
 # Start container
