@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 
 echo "Setup OS : begin"
@@ -68,4 +68,4 @@ sed -i -e 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/ss
 systemctl restart ssh
 
 
-echo "Setup OS : script complete!"
+echo "Setup OS : complete!"

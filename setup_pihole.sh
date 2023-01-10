@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/bin/bash -e
+
+
+echo "Setup APP : begin"
 
 
 # locale
@@ -41,3 +44,5 @@ EOF
 # install
 curl -sSL https://install.pi-hole.net | bash /dev/stdin --unattended
 echo "Setup complete - you can access the console at https://$(hostname -I)/"
+
+echo "Setup APP : complete"
