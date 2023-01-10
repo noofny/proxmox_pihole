@@ -14,7 +14,7 @@ Tested on ProxMox v7 and PiHole v5.6
 SSH to your ProxMox server as a privileged user and run...
 
 ```shell
-bash -c "$(wget --no-cache -qLO - https://raw.githubusercontent.com/noofny/proxmox_pihole/master/init.sh)"
+bash -c "$(wget --no-cache -qLO - https://raw.githubusercontent.com/noofny/proxmox_pihole/master/setup.sh)"
 ```
 
 ## Commands
