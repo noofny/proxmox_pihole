@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 
 echo "Setup OS : begin"
@@ -24,13 +24,12 @@ timedatectl set-timezone Australia/Sydney
 
 # patch
 echo "Patching..."
-apt-get update
-apt-get upgrade -y
+apt-get update && apt-get upgrade -y
 
 
 # packages
 echo "Installing packages..."
-apt-get install -y \
+apt-get update && apt-get install -y \
     curl \
     wget \
     htop \
@@ -69,4 +68,4 @@ sed -i -e 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/ss
 systemctl restart ssh
 
 
-echo "Setup OS : script complete!"
+echo "Setup OS : complete!"

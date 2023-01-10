@@ -17,17 +17,22 @@ function cleanup() {
 }
 
 
+echo "Init : begin"
+
+
 TEMP_FOLDER_PATH=$(mktemp -d)
 pushd $TEMP_FOLDER_PATH >/dev/null
 
 
 # prompts/args
-DEFAULT_HOSTNAME='pihole-2'
+DEFAULT_HOSTNAME='pihole-1'
 DEFAULT_PASSWORD='pihole'
-DEFAULT_IPV4_CIDR='192.168.0.15/24'
+DEFAULT_IPV4_CIDR='192.168.0.100/24'
 DEFAULT_IPV4_GW='192.168.0.1'
 DEFAULT_UPSTREAM_DNS_1='1.1.1.1'
 DEFAULT_UPSTREAM_DNS_2='1.0.0.1'
+DEFAULT_NET_INTERFACE='eth0'
+DEFAULT_NET_BRIDGE='vmbr1'
 DEFAULT_CONTAINER_ID=$(pvesh get /cluster/nextid)
 read -p "Enter a hostname (${DEFAULT_HOSTNAME}) : " HOSTNAME
 read -s -p "Enter a password (${DEFAULT_PASSWORD}) : " HOSTPASS
@@ -36,6 +41,8 @@ read -p "Enter an IPv4 CIDR (${DEFAULT_IPV4_CIDR}) : " HOST_IP4_CIDR
 read -p "Enter an IPv4 Gateway (${DEFAULT_IPV4_GW}) : " HOST_IP4_GATEWAY
 read -p "Enter an IPv4 address for upstream DNS 1 (${DEFAULT_UPSTREAM_DNS_1}) : " UPSTREAM_DNS_1
 read -p "Enter an IPv4 address for upstream DNS 2 (${DEFAULT_UPSTREAM_DNS_2}) : " UPSTREAM_DNS_2
+read -p "Enter the network interface to use (${DEFAULT_NET_INTERFACE}) : " NET_INTERFACE
+read -p "Enter the network bridge to use (${DEFAULT_NET_BRIDGE}) : " NET_BRIDGE
 read -p "Enter a container ID (${DEFAULT_CONTAINER_ID}) : " CONTAINER_ID
 HOSTNAME="${HOSTNAME:-${DEFAULT_HOSTNAME}}"
 HOSTPASS="${HOSTPASS:-${DEFAULT_PASSWORD}}"
@@ -43,13 +50,19 @@ HOST_IP4_CIDR="${HOST_IP4_CIDR:-${DEFAULT_IPV4_CIDR}}"
 HOST_IP4_GATEWAY="${HOST_IP4_GATEWAY:-${DEFAULT_IPV4_GW}}"
 UPSTREAM_DNS_1="${UPSTREAM_DNS_1:-${DEFAULT_UPSTREAM_DNS_1}}"
 UPSTREAM_DNS_2="${UPSTREAM_DNS_2:-${DEFAULT_UPSTREAM_DNS_2}}"
+NET_INTERFACE="${NET_INTERFACE:-${DEFAULT_NET_INTERFACE}}"
+NET_BRIDGE="${NET_BRIDGE:-${DEFAULT_NET_BRIDGE}}"
 CONTAINER_ID="${CONTAINER_ID:-${DEFAULT_CONTAINER_ID}}"
 export HOST_IP4_CIDR=${HOST_IP4_CIDR}
 export UPSTREAM_DNS_1=${UPSTREAM_DNS_1}
 export UPSTREAM_DNS_2=${UPSTREAM_DNS_2}
+# NOTE: Use 'pveam' tool to list available & download LXC images.
+#       Path for 'remote' storage will be '/mnt/proxmox/template/cache/'
+# TODO: make this dynamic so the user can choose!
 CONTAINER_OS_TYPE='ubuntu'
-TEMPLATE_STRING="remote:vztmpl/ubuntu-21.04-standard_21.04-1_amd64.tar.gz"
-info "Using template: ${TEMPLATE_STRING}"
+CONTAINER_OS_VERSION='ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+TEMPLATE_LOCATION="remote:vztmpl/${CONTAINER_OS_VERSION}"
+info "Using template: ${TEMPLATE_LOCATION}"
 
 
 # storage location
@@ -77,13 +90,13 @@ info "Using '$STORAGE' for storage location."
 info "Creating LXC container..."
 CONTAINER_ARCH=$(dpkg --print-architecture)
 info "Using ARCH: ${CONTAINER_ARCH}"
-pct create "${CONTAINER_ID}" "${TEMPLATE_STRING}" \
+pct create "${CONTAINER_ID}" "${TEMPLATE_LOCATION}" \
     -arch "${CONTAINER_ARCH}" \
     -cores 1 \
     -onboot 1 \
     -features nesting=1 \
     -hostname "${HOSTNAME}" \
-    -net0 name=eth0,bridge=vmbr1,gw=${HOST_IP4_GATEWAY},ip=${HOST_IP4_CIDR} \
+    -net0 name=${NET_INTERFACE},bridge=${NET_BRIDGE},gw=${HOST_IP4_GATEWAY},ip=${HOST_IP4_CIDR} \
     -ostype "${CONTAINER_OS_TYPE}" \
     -password ${HOSTPASS} \
     -storage "${STORAGE}"
@@ -123,3 +136,5 @@ pct exec "${CONTAINER_ID}" -- bash -c "/usr/local/bin/pihole -a -p"
 rm -rf ${TEMP_FOLDER_PATH}
 info "Container and app setup - container will restart!"
 pct reboot "${CONTAINER_ID}"
+
+echo "Init : complete"

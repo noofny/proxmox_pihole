@@ -14,10 +14,21 @@ Tested on ProxMox v7 and PiHole v5.6
 SSH to your ProxMox server as a privileged user and run...
 
 ```shell
-bash -c "$(wget --no-cache -qLO - https://raw.githubusercontent.com/noofny/proxmox_pihole/master/setup.sh)"
+bash -c "$(wget --no-cache -qLO - https://raw.githubusercontent.com/noofny/proxmox_pihole/master/init.sh)"
 ```
 
-## Inspiration
+## Commands
+
+```shell
+# list available LXC images...
+pveam available --section system
+
+# download an LXC image...
+pveam download remote ubuntu-22.10-standard_22.10-1_amd64.tar.zst
+```
+
+## Inspiration / Reference
 
 - [Install pihole on a ProxMox LXC ubuntu container and setup as Primary DNS for a Unifi Network](https://florianmuller.com/install-pihole-on-a-proxmox-lxc-ubuntu-container-and-setup-as-primary-dns-for-unifi-network)
 - [proxmox motioneye container](https://github.com/JedimasterRDW/proxmox_motioneye_container)
+- [pveam docs](https://pve.proxmox.com/pve-docs/pveam.1.html)
