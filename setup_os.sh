@@ -24,13 +24,12 @@ timedatectl set-timezone Australia/Sydney
 
 # patch
 echo "Patching..."
-apt-get update
-apt-get upgrade -y
+apt-get update && apt-get upgrade -y
 
 
 # packages
 echo "Installing packages..."
-apt-get install -y \
+apt-get update && apt-get install -y \
     curl \
     wget \
     htop \

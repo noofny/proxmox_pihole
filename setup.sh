@@ -22,9 +22,9 @@ pushd $TEMP_FOLDER_PATH >/dev/null
 
 
 # prompts/args
-DEFAULT_HOSTNAME='pihole-1'
+DEFAULT_HOSTNAME='pihole-2'
 DEFAULT_PASSWORD='pihole'
-DEFAULT_IPV4_CIDR='192.168.0.48/24'
+DEFAULT_IPV4_CIDR='192.168.0.15/24'
 DEFAULT_IPV4_GW='192.168.0.1'
 DEFAULT_UPSTREAM_DNS_1='1.1.1.1'
 DEFAULT_UPSTREAM_DNS_2='1.0.0.1'
@@ -37,24 +37,18 @@ read -p "Enter an IPv4 Gateway (${DEFAULT_IPV4_GW}) : " HOST_IP4_GATEWAY
 read -p "Enter an IPv4 address for upstream DNS 1 (${DEFAULT_UPSTREAM_DNS_1}) : " UPSTREAM_DNS_1
 read -p "Enter an IPv4 address for upstream DNS 2 (${DEFAULT_UPSTREAM_DNS_2}) : " UPSTREAM_DNS_2
 read -p "Enter a container ID (${DEFAULT_CONTAINER_ID}) : " CONTAINER_ID
-info "Using ContainerID: ${CONTAINER_ID}"
 HOSTNAME="${HOSTNAME:-${DEFAULT_HOSTNAME}}"
 HOSTPASS="${HOSTPASS:-${DEFAULT_PASSWORD}}"
 HOST_IP4_CIDR="${HOST_IP4_CIDR:-${DEFAULT_IPV4_CIDR}}"
 HOST_IP4_GATEWAY="${HOST_IP4_GATEWAY:-${DEFAULT_IPV4_GW}}"
 UPSTREAM_DNS_1="${UPSTREAM_DNS_1:-${DEFAULT_UPSTREAM_DNS_1}}"
 UPSTREAM_DNS_2="${UPSTREAM_DNS_2:-${DEFAULT_UPSTREAM_DNS_2}}"
+CONTAINER_ID="${CONTAINER_ID:-${DEFAULT_CONTAINER_ID}}"
 export HOST_IP4_CIDR=${HOST_IP4_CIDR}
 export UPSTREAM_DNS_1=${UPSTREAM_DNS_1}
 export UPSTREAM_DNS_2=${UPSTREAM_DNS_2}
 CONTAINER_OS_TYPE='ubuntu'
-CONTAINER_OS_VERSION='21.04'
-CONTAINER_OS_STRING="${CONTAINER_OS_TYPE}-${CONTAINER_OS_VERSION}"
-info "Using OS: ${CONTAINER_OS_STRING}"
-CONTAINER_ARCH=$(dpkg --print-architecture)
-mapfile -t TEMPLATES < <(pveam available -section system | sed -n "s/.*\($CONTAINER_OS_STRING.*\)/\1/p" | sort -t - -k 2 -V)
-TEMPLATE="${TEMPLATES[-1]}"
-TEMPLATE_STRING="remote:vztmpl/${TEMPLATE}"
+TEMPLATE_STRING="remote:vztmpl/ubuntu-21.04-standard_21.04-1_amd64.tar.gz"
 info "Using template: ${TEMPLATE_STRING}"
 
 
@@ -81,13 +75,15 @@ info "Using '$STORAGE' for storage location."
 
 # Create the container
 info "Creating LXC container..."
+CONTAINER_ARCH=$(dpkg --print-architecture)
+info "Using ARCH: ${CONTAINER_ARCH}"
 pct create "${CONTAINER_ID}" "${TEMPLATE_STRING}" \
     -arch "${CONTAINER_ARCH}" \
     -cores 1 \
     -onboot 1 \
     -features nesting=1 \
     -hostname "${HOSTNAME}" \
-    -net0 name=eth0,bridge=vmbr0,gw=${HOST_IP4_GATEWAY},ip=${HOST_IP4_CIDR} \
+    -net0 name=eth0,bridge=vmbr1,gw=${HOST_IP4_GATEWAY},ip=${HOST_IP4_CIDR} \
     -ostype "${CONTAINER_OS_TYPE}" \
     -password ${HOSTPASS} \
     -storage "${STORAGE}"
