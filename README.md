@@ -32,3 +32,4 @@ pveam download remote ubuntu-22.10-standard_22.10-1_amd64.tar.zst
 - [Install pihole on a ProxMox LXC ubuntu container and setup as Primary DNS for a Unifi Network](https://florianmuller.com/install-pihole-on-a-proxmox-lxc-ubuntu-container-and-setup-as-primary-dns-for-unifi-network)
 - [proxmox motioneye container](https://github.com/JedimasterRDW/proxmox_motioneye_container)
 - [pveam docs](https://pve.proxmox.com/pve-docs/pveam.1.html)
+- [Pi-hole as All-Around DNS Solution](https://docs.pi-hole.net/guides/dns/unbound/)

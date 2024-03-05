@@ -5,16 +5,11 @@ echo "Setup OS : begin"
 
 
 # locale
-echo "Setting locale..."
+echo "Fixing locale..."
 LOCALE_VALUE="en_AU.UTF-8"
-echo ">>> locale-gen..."
 locale-gen ${LOCALE_VALUE}
-cat /etc/default/locale
 source /etc/default/locale
-echo ">>> update-locale..."
 update-locale ${LOCALE_VALUE}
-echo ">>> hack /etc/ssh/ssh_config..."
-sed -e '/SendEnv/ s/^#*/#/' -i /etc/ssh/ssh_config
 
 
 # timezone
@@ -34,7 +29,8 @@ apt-get update && apt-get install -y \
     wget \
     htop \
     net-tools \
-    ntp
+    ntp \
+    unbound
 
 
 # firewall

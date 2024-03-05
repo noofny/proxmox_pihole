@@ -1,29 +1,25 @@
 #!/bin/bash -e
 
 
-echo "Setup APP : begin"
+echo "Setup PiHole : begin"
 
 
 # locale
-echo "Setting locale..."
+echo "Fixing locale..."
 LOCALE_VALUE="en_AU.UTF-8"
-echo ">>> locale-gen..."
 locale-gen ${LOCALE_VALUE}
-cat /etc/default/locale
 source /etc/default/locale
-echo ">>> update-locale..."
 update-locale ${LOCALE_VALUE}
-echo ">>> hack /etc/ssh/ssh_config..."
-sed -e '/SendEnv/ s/^#*/#/' -i /etc/ssh/ssh_config
 
 
-# unattended
+# unattended / config
+echo "Creating PiHole config folder..."
 current_ip=$(hostname -i)
 conf_folder='/etc/pihole'
-conf_filename='setupVars.conf'
-conf_path="${conf_folder}/${conf_filename}"
 mkdir "${conf_folder}"
-cat <<EOF > ${conf_path}
+
+echo "Creating PiHole setupVars file..."
+cat <<EOF > "${conf_folder}/setupVars.conf"
 PIHOLE_INTERFACE=eth0
 IPV4_ADDRESS=${HOST_IP4_CIDR}
 IPV6_ADDRESS=
@@ -40,9 +36,25 @@ BLOCKING_ENABLED=true
 WEBTHEME=default-darker
 EOF
 
+echo "Creating PiHole-FTL config file..."
+cat <<EOF > "${conf_folder}/pihole-FTL.conf"
+PRIVACYLEVEL=0
+RATE_LIMIT=10000/60
+EOF
 
-# install
+
+# install pihole
+echo "Downloading & executing PiHole install script..."
 curl -sSL https://install.pi-hole.net | bash /dev/stdin --unattended
+echo "Stopping unbound..."
+service unbound stop
+echo "Moving unbound config file..."
+mv /pi-hole.conf /etc/unbound/unbound.conf.d/pi-hole.conf
+echo "Starting unbound..."
+service unbound start
+echo "Testing unbound..."
+dig pi-hole.net @127.0.0.1 -p 5335
 echo "Setup complete - you can access the console at https://$(hostname -I)/"
 
-echo "Setup APP : complete"
+
+echo "Setup PiHole : complete"

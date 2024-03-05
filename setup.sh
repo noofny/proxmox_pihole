@@ -60,7 +60,7 @@ export UPSTREAM_DNS_2=${UPSTREAM_DNS_2}
 #       Path for 'remote' storage will be '/mnt/proxmox/template/cache/'
 # TODO: make this dynamic so the user can choose!
 CONTAINER_OS_TYPE='ubuntu'
-CONTAINER_OS_VERSION='ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+CONTAINER_OS_VERSION='22.04'
 TEMPLATE_LOCATION="remote:vztmpl/${CONTAINER_OS_VERSION}"
 info "Using template: ${TEMPLATE_LOCATION}"
 
@@ -92,7 +92,7 @@ CONTAINER_ARCH=$(dpkg --print-architecture)
 info "Using ARCH: ${CONTAINER_ARCH}"
 pct create "${CONTAINER_ID}" "${TEMPLATE_LOCATION}" \
     -arch "${CONTAINER_ARCH}" \
-    -cores 1 \
+    -cores 2 \
     -onboot 1 \
     -features nesting=1 \
     -hostname "${HOSTNAME}" \
@@ -125,8 +125,10 @@ pct reboot "${CONTAINER_ID}"
 # Setup pihole
 info "Fetching setup script..."
 wget -qL https://raw.githubusercontent.com/noofny/proxmox_pihole/master/setup_pihole.sh
+wget -qL https://raw.githubusercontent.com/noofny/proxmox_pihole/master/pi-hole.conf
 info "Executing script..."
 pct push "${CONTAINER_ID}" ./setup_pihole.sh /setup_pihole.sh -perms 755
+pct push "${CONTAINER_ID}" ./pi-hole.conf /pi-hole.conf
 pct exec "${CONTAINER_ID}" -- bash -c "/setup_pihole.sh"
 info "Please set web console password..."
 pct exec "${CONTAINER_ID}" -- bash -c "/usr/local/bin/pihole -a -p"
