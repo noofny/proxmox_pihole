@@ -17,9 +17,6 @@ function cleanup() {
 }
 
 
-echo "Init : begin"
-
-
 TEMP_FOLDER_PATH=$(mktemp -d)
 pushd $TEMP_FOLDER_PATH >/dev/null
 
@@ -93,23 +90,26 @@ info "Using ARCH: ${CONTAINER_ARCH}"
 pct create "${CONTAINER_ID}" "${TEMPLATE_LOCATION}" \
     -arch "${CONTAINER_ARCH}" \
     -cores 2 \
-    -onboot 1 \
+    -memory 2048 \
+    -swap 0 \
+    -onboot 0 \
     -features nesting=1 \
     -hostname "${HOSTNAME}" \
     -net0 name=${NET_INTERFACE},bridge=${NET_BRIDGE},gw=${HOST_IP4_GATEWAY},ip=${HOST_IP4_CIDR} \
     -ostype "${CONTAINER_OS_TYPE}" \
     -password ${HOSTPASS} \
-    -storage "${STORAGE}"
+    -storage "${STORAGE}" \
+    --unprivileged 1 \
+    || fatal "Failed to create container!"
 
 
 # Start container
 info "Starting LXC container..."
-pct start "${CONTAINER_ID}"
+pct start "${CONTAINER_ID}" || exit 1
 sleep 5
 CONTAINER_STATUS=$(pct status $CONTAINER_ID)
 if [ ${CONTAINER_STATUS} != "status: running" ]; then
-    error "Container ${CONTAINER_ID} is not running! status=${CONTAINER_STATUS}"
-    exit 1
+    fatal "Container ${CONTAINER_ID} is not running! status=${CONTAINER_STATUS}"
 fi
 
 
@@ -138,5 +138,6 @@ pct exec "${CONTAINER_ID}" -- bash -c "/usr/local/bin/pihole -a -p"
 rm -rf ${TEMP_FOLDER_PATH}
 info "Container and app setup - container will restart!"
 pct reboot "${CONTAINER_ID}"
+
 
 echo "Init : complete"
