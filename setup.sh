@@ -99,8 +99,13 @@ pct create "${CONTAINER_ID}" "${TEMPLATE_STRING}" \
     -ostype "${CONTAINER_OS_TYPE}" \
     -password ${HOSTPASS} \
     -storage "${STORAGE}" \
-    --unprivileged 1 \
+    --unprivileged 0 \
     || fatal "Failed to create container!"
+
+
+# Configure container
+info "Configuring LXC container..."
+pct set "${CONTAINER_ID}" -mp0 /mnt/backups,mp=/mnt/backups
 
 
 # Start container
@@ -126,9 +131,11 @@ pct reboot "${CONTAINER_ID}"
 info "Fetching setup script..."
 wget -qL https://raw.githubusercontent.com/noofny/proxmox_pihole/master/setup_pihole.sh
 wget -qL https://raw.githubusercontent.com/noofny/proxmox_pihole/master/pi-hole.conf
+wget -qL https://raw.githubusercontent.com/noofny/proxmox_pihole/master/backup.sh
 info "Executing script..."
 pct push "${CONTAINER_ID}" ./setup_pihole.sh /setup_pihole.sh -perms 755
 pct push "${CONTAINER_ID}" ./pi-hole.conf /pi-hole.conf
+pct push "${CONTAINER_ID}" ./backup.sh /backup.sh
 pct exec "${CONTAINER_ID}" -- bash -c "/setup_pihole.sh"
 info "Please set web console password..."
 pct exec "${CONTAINER_ID}" -- bash -c "/usr/local/bin/pihole -a -p"
