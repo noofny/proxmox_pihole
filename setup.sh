@@ -89,6 +89,8 @@ info "Using '$STORAGE' for storage location."
 info "Creating LXC container..."
 CONTAINER_ARCH=$(dpkg --print-architecture)
 info "Using ARCH: ${CONTAINER_ARCH}"
+echo "pct create ${CONTAINER_ID} ${TEMPLATE_LOCATION} -arch ${CONTAINER_ARCH} -cores 2 -memory 2048 -swap 0 -onboot 0 -features nesting=1 -hostname ${HOSTNAME} -net0 name=${NET_INTERFACE},bridge=${NET_BRIDGE},gw=${HOST_IP4_GATEWAY},ip=${HOST_IP4_CIDR} -ostype ${CONTAINER_OS_TYPE} -password ${HOSTPASS} -storage ${STORAGE} --unprivileged 1"
+exit 1
 pct create "${CONTAINER_ID}" "${TEMPLATE_LOCATION}" \
     -arch "${CONTAINER_ARCH}" \
     -cores 2 \
