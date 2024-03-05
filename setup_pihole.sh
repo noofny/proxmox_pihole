@@ -47,7 +47,7 @@ EOF
 echo "Downloading & executing PiHole install script..."
 curl -sSL https://install.pi-hole.net | bash /dev/stdin --unattended
 echo "Moving backup script..."
-echo "...append '0 18 * * * /root/backup.sh' when crontab opens..."
+echo "...append '10 00 * * * /root/backup.sh' when crontab opens..."
 mv /backup.sh /root/backup.sh
 crontab -e
 echo "Stopping unbound..."
