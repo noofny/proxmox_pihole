@@ -53,13 +53,15 @@ CONTAINER_ID="${CONTAINER_ID:-${DEFAULT_CONTAINER_ID}}"
 export HOST_IP4_CIDR=${HOST_IP4_CIDR}
 export UPSTREAM_DNS_1=${UPSTREAM_DNS_1}
 export UPSTREAM_DNS_2=${UPSTREAM_DNS_2}
-# NOTE: Use 'pveam' tool to list available & download LXC images.
-#       Path for 'remote' storage will be '/mnt/proxmox/template/cache/'
-# TODO: make this dynamic so the user can choose!
 CONTAINER_OS_TYPE='ubuntu'
 CONTAINER_OS_VERSION='22.04'
-TEMPLATE_LOCATION="remote:vztmpl/${CONTAINER_OS_VERSION}"
-info "Using template: ${TEMPLATE_LOCATION}"
+CONTAINER_OS_STRING="${CONTAINER_OS_TYPE}-${CONTAINER_OS_VERSION}"
+info "Using OS: ${CONTAINER_OS_STRING}"
+CONTAINER_ARCH=$(dpkg --print-architecture)
+mapfile -t TEMPLATES < <(pveam available -section system | sed -n "s/.*\($CONTAINER_OS_STRING.*\)/\1/p" | sort -t - -k 2 -V)
+TEMPLATE="${TEMPLATES[-1]}"
+TEMPLATE_STRING="remote:vztmpl/${TEMPLATE}"
+info "Using template: ${TEMPLATE_STRING}"
 
 
 # storage location
