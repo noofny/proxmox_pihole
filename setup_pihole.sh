@@ -49,6 +49,7 @@ curl -sSL https://install.pi-hole.net | bash /dev/stdin --unattended
 echo "Moving backup script..."
 echo "...append '10 00 * * * /root/backup.sh' when crontab opens..."
 mv /backup.sh /root/backup.sh
+chmod +x /root/backup.sh
 crontab -e
 echo "Stopping unbound..."
 service unbound stop
