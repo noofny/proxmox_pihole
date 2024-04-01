@@ -132,10 +132,12 @@ info "Fetching setup script..."
 wget -qL https://raw.githubusercontent.com/noofny/proxmox_pihole/master/setup_pihole.sh
 wget -qL https://raw.githubusercontent.com/noofny/proxmox_pihole/master/pi-hole.conf
 wget -qL https://raw.githubusercontent.com/noofny/proxmox_pihole/master/backup.sh
+wget -qL https://raw.githubusercontent.com/noofny/proxmox_pihole/master/auto_dns.py
 info "Executing script..."
 pct push "${CONTAINER_ID}" ./setup_pihole.sh /setup_pihole.sh -perms 755
 pct push "${CONTAINER_ID}" ./pi-hole.conf /pi-hole.conf
 pct push "${CONTAINER_ID}" ./backup.sh /backup.sh
+pct push "${CONTAINER_ID}" ./auto_dns.py /auto_dns.py
 pct exec "${CONTAINER_ID}" -- bash -c "/setup_pihole.sh"
 info "Please set web console password..."
 pct exec "${CONTAINER_ID}" -- bash -c "/usr/local/bin/pihole -a -p"

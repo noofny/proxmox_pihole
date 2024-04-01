@@ -30,7 +30,10 @@ apt-get update && apt-get install -y \
     htop \
     net-tools \
     ntp \
-    unbound
+    unbound \
+    python3-pip
+# TODO: move this to requirements and venv
+pip install ping3
 
 
 # firewall

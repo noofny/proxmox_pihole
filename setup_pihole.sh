@@ -43,14 +43,20 @@ RATE_LIMIT=10000/60
 EOF
 
 
+# custom scripts
+echo "Moving and permissioning scripts..."
+mv /backup.sh /root/backup.sh
+mv /auto_dns.py /root/auto_dns.py
+chmod +x /root/backup.sh
+echo "...append the following to cron..."
+echo "10 00 * * * /root/backup.sh"
+echo "* * * * * python3 /root/auto_dns.py > /root/auto_dns.py.log 2>&1"
+crontab -e
+
+
 # install pihole
 echo "Downloading & executing PiHole install script..."
 curl -sSL https://install.pi-hole.net | bash /dev/stdin --unattended
-echo "Moving backup script..."
-echo "...append '10 00 * * * /root/backup.sh' when crontab opens..."
-mv /backup.sh /root/backup.sh
-chmod +x /root/backup.sh
-crontab -e
 echo "Stopping unbound..."
 service unbound stop
 echo "Moving unbound config file..."
