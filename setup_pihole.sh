@@ -20,7 +20,7 @@ mkdir "${conf_folder}"
 
 echo "Creating PiHole setupVars file..."
 cat <<EOF > "${conf_folder}/setupVars.conf"
-PIHOLE_INTERFACE=eth0
+PIHOLE_INTERFACE=${NET_INTERFACE}
 IPV4_ADDRESS=${HOST_IP4_CIDR}
 IPV6_ADDRESS=
 PIHOLE_DNS_1=${UPSTREAM_DNS_1}

@@ -71,7 +71,7 @@ info "Using template: ${TEMPLATE_STRING}"
 STORAGE_LIST=( $(pvesm status -content rootdir | awk 'NR>1 {print $1}') )
 if [ ${#STORAGE_LIST[@]} -eq 0 ]; then
     warn "'Container' needs to be selected for at least one storage location."
-    die "Unable to detect valid storage location."
+    fatal "Unable to detect valid storage location."
 elif [ ${#STORAGE_LIST[@]} -eq 1 ]; then
     STORAGE=${STORAGE_LIST[0]}
 else
@@ -98,7 +98,7 @@ pct create "${CONTAINER_ID}" "${TEMPLATE_STRING}" \
     -onboot 0 \
     -features nesting=1,keyctl=1 \
     -hostname "${HOSTNAME}" \
-    -net0 name=eth0,bridge="${NET_BRIDGE}",gw="${HOST_IP4_GATEWAY}",ip="${HOST_IP4_CIDR}" \
+    -net0 name="${NET_INTERFACE}",bridge="${NET_BRIDGE}",gw="${HOST_IP4_GATEWAY}",ip="${HOST_IP4_CIDR}" \
     -ostype "${CONTAINER_OS_TYPE}" \
     -password "${HOSTPASS}" \
     -storage "${STORAGE}" \
@@ -142,8 +142,6 @@ pct push "${CONTAINER_ID}" ./pi-hole.conf /pi-hole.conf
 pct push "${CONTAINER_ID}" ./backup.sh /backup.sh
 pct push "${CONTAINER_ID}" ./auto_dns.py /auto_dns.py
 pct exec "${CONTAINER_ID}" -- bash -c "/setup_pihole.sh"
-info "Please set web console password..."
-pct exec "${CONTAINER_ID}" -- bash -c "/usr/local/bin/pihole -a -p"
 
 
 # Done - reboot!
