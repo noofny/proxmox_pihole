@@ -2,6 +2,10 @@
 
 
 # functions
+function fatal() {
+    echo -e "\e[91m[FATAL] $1\e[39m"
+    exit 1
+}
 function error() {
     echo -e "\e[91m[ERROR] $1\e[39m"
 }
@@ -29,7 +33,7 @@ DEFAULT_IPV4_GW='192.168.0.1'
 DEFAULT_UPSTREAM_DNS_1='1.1.1.1'
 DEFAULT_UPSTREAM_DNS_2='1.0.0.1'
 DEFAULT_NET_INTERFACE='eth0'
-DEFAULT_NET_BRIDGE='vmbr1'
+DEFAULT_NET_BRIDGE='vmbr100'
 DEFAULT_CONTAINER_ID=$(pvesh get /cluster/nextid)
 read -p "Enter a hostname (${DEFAULT_HOSTNAME}) : " HOSTNAME
 read -s -p "Enter a password (${DEFAULT_PASSWORD}) : " HOSTPASS
@@ -49,18 +53,17 @@ UPSTREAM_DNS_1="${UPSTREAM_DNS_1:-${DEFAULT_UPSTREAM_DNS_1}}"
 UPSTREAM_DNS_2="${UPSTREAM_DNS_2:-${DEFAULT_UPSTREAM_DNS_2}}"
 NET_INTERFACE="${NET_INTERFACE:-${DEFAULT_NET_INTERFACE}}"
 NET_BRIDGE="${NET_BRIDGE:-${DEFAULT_NET_BRIDGE}}"
-CONTAINER_ID="${CONTAINER_ID:-${DEFAULT_CONTAINER_ID}}"
 export HOST_IP4_CIDR=${HOST_IP4_CIDR}
 export UPSTREAM_DNS_1=${UPSTREAM_DNS_1}
 export UPSTREAM_DNS_2=${UPSTREAM_DNS_2}
+
+CONTAINER_ID="${CONTAINER_ID:-${DEFAULT_CONTAINER_ID}}"
 CONTAINER_OS_TYPE='ubuntu'
 CONTAINER_OS_VERSION='22.04'
 CONTAINER_OS_STRING="${CONTAINER_OS_TYPE}-${CONTAINER_OS_VERSION}"
 info "Using OS: ${CONTAINER_OS_STRING}"
 CONTAINER_ARCH=$(dpkg --print-architecture)
-mapfile -t TEMPLATES < <(pveam available -section system | sed -n "s/.*\($CONTAINER_OS_STRING.*\)/\1/p" | sort -t - -k 2 -V)
-TEMPLATE="${TEMPLATES[-1]}"
-TEMPLATE_STRING="remote:vztmpl/${TEMPLATE}"
+TEMPLATE_STRING=$(pveam list cfs-ssd | grep $CONTAINER_OS_STRING | awk '{print $1}')
 info "Using template: ${TEMPLATE_STRING}"
 
 
@@ -95,9 +98,9 @@ pct create "${CONTAINER_ID}" "${TEMPLATE_STRING}" \
     -onboot 0 \
     -features nesting=1,keyctl=1 \
     -hostname "${HOSTNAME}" \
-    -net0 name=eth0,bridge=vmbr1,gw=${HOST_IP4_GATEWAY},ip=${HOST_IP4_CIDR} \
+    -net0 name=eth0,bridge="${NET_BRIDGE}",gw="${HOST_IP4_GATEWAY}",ip="${HOST_IP4_CIDR}" \
     -ostype "${CONTAINER_OS_TYPE}" \
-    -password ${HOSTPASS} \
+    -password "${HOSTPASS}" \
     -storage "${STORAGE}" \
     --unprivileged 1 \
     || fatal "Failed to create container!"
@@ -105,14 +108,14 @@ pct create "${CONTAINER_ID}" "${TEMPLATE_STRING}" \
 
 # Configure container
 info "Configuring LXC container..."
-pct set "${CONTAINER_ID}" -mp0 /mnt/backups,mp=/mnt/backups
+pct set "${CONTAINER_ID}" -mp0 /mnt/smb/backups,mp=/mnt/backups,replicate=0,shared=1
 
 
 # Start container
 info "Starting LXC container..."
 pct start "${CONTAINER_ID}" || exit 1
 sleep 5
-CONTAINER_STATUS=$(pct status $CONTAINER_ID)
+CONTAINER_STATUS=$(pct status "${CONTAINER_ID}")
 if [ ${CONTAINER_STATUS} != "status: running" ]; then
     fatal "Container ${CONTAINER_ID} is not running! status=${CONTAINER_STATUS}"
 fi

@@ -13,7 +13,7 @@ log() {
 
 cd "${REMOTE_PATH}"
 log "Backup starting on $(hostname)..."
-pihole -a -t &
+pihole-FTL --teleporter &
 process_id=$!
 wait $process_id
 find ${REMOTE_PATH} -mindepth 1 -mtime +7 -delete
