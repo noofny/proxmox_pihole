@@ -112,12 +112,14 @@ pct set "${CONTAINER_ID}" -mp0 /mnt/smb/backups,mp=/mnt/backups,replicate=0,shar
 
 
 # Start container
-info "Starting LXC container..."
+info "Starting LXC container CONTAINER_ID=${CONTAINER_ID}..."
 pct start "${CONTAINER_ID}" || exit 1
 sleep 5
-CONTAINER_STATUS=$(pct status "${CONTAINER_ID}")
-if [ ${CONTAINER_STATUS} != "status: running" ]; then
-    fatal "Container ${CONTAINER_ID} is not running! status=${CONTAINER_STATUS}"
+CONTAINER_STATUS=$(pct status $CONTAINER_ID)
+info "Checking comtainer status CONTAINER_ID=${CONTAINER_ID} CONTAINER_STATUS=${CONTAINER_STATUS}"
+if [ "${CONTAINER_STATUS}" != "status: running" ]; then
+    error "Container ${CONTAINER_ID} is not running! status=${CONTAINER_STATUS}"
+    exit 1
 fi
 
 
